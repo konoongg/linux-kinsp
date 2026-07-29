@@ -1,0 +1,71 @@
+[
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/main.c", "-o", "src/main.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/configure.c", "-o", "src/configure.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/events/filter.c", "-o", "src/events/filter.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/events/event.c", "-o", "src/events/event.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/events/profiler.c", "-o", "src/events/profiler.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/exectrace",
+		"arguments": [
+			"gcc", "-g", "-O2", "-Wall",
+			"-Isrc", "-I.", "-I../libs/include",
+			"-c", "src/events/event_processor.c", "-o", "src/events/event_processor.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/libs",
+		"arguments": [
+			"gcc", "-Wall", "-Wextra", "-std=c11", "-fPIC", "-Iinclude",
+			"-c", "src/object/lk_obj.c", "-o", "src/object/lk_obj.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/libs",
+		"arguments": [
+			"gcc", "-Wall", "-Wextra", "-std=c11", "-fPIC", "-Iinclude",
+			"-c", "src/object/lk_status.c", "-o", "src/object/lk_status.o"
+		]
+	},
+	{
+		"directory": "/home/vlad/work/linux-kinsp/libs",
+		"arguments": [
+			"gcc", "-Wall", "-Wextra", "-std=c11", "-fPIC", "-Iinclude",
+			"-c", "src/files/lk_file.c", "-o", "src/files/lk_file.o"
+		]
+	}
+]
