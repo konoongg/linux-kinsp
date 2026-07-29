@@ -1,0 +1,7 @@
+*.o
+*.skel.h
+*.log
+*.txt
+main
+examples/hello_exec
+.vscode/*
