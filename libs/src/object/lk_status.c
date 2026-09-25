@@ -118,6 +118,7 @@ lk_error_str(lk_error_code code)
     case LK_MEM_ALLOC_FAIL:        str = "memory allocation failed"; break;
     case LK_UNDEFINED_ERROR:       str = "undefined error"; break;
     case LK_CLOSE:                 str = "close failed"; break;
+    case LK_UNMATCH:               str = "unmatch"; break;
     default:                       str = "unknown error"; break;
     }
 

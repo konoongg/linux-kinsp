@@ -18,15 +18,22 @@
 #define ET_PERF_BUFFER_PAGES 64
 
 typedef struct profiler_impl profiler_impl;
+typedef struct event_message event_message;
+
+struct event_message {
+	et_event event;
+	event_message *next;
+};
 
 struct profiler_impl {
 	et_profiler base;
 	struct exec_trace_bpf *skel;
 	struct perf_buffer *pb;
 	const et_filter *filter;
-	et_event current;
+	event_message *head;
+	event_message *tail;
+	int queue_error;
 	volatile sig_atomic_t exiting;
-	bool event_ready;
 };
 
 static profiler_impl *active_profiler = NULL;
@@ -39,19 +46,66 @@ sig_handler(int sig)
 }
 
 static void
+event_queue_push(profiler_impl *p, const et_event *event)
+{
+	event_message *message = lk_malloc(sizeof(*message));
+
+	if (!message) {
+		p->queue_error = -ENOMEM;
+		return;
+	}
+
+	message->event = *event;
+	message->next = NULL;
+
+	if (p->tail)
+		p->tail->next = message;
+	else
+		p->head = message;
+	p->tail = message;
+}
+
+static event_message *
+event_queue_pop(profiler_impl *p)
+{
+	event_message *message = p->head;
+
+	if (!message)
+		return NULL;
+
+	p->head = message->next;
+	if (!p->head)
+		p->tail = NULL;
+	return message;
+}
+
+static void
+event_queue_clear(profiler_impl *p)
+{
+	event_message *message;
+
+	while ((message = event_queue_pop(p)))
+		lk_free(message);
+}
+
+static void
 sample_cb(void *ctx, int cpu, void *data, __u32 size)
 {
 	profiler_impl *p = (profiler_impl *)ctx;
-	et_event *ev = (et_event *)data;
+	const et_event *event = data;
 
 	(void)cpu;
-	(void)size;
 
-	if (!et_ft_check(p->filter, ev))
+	if (size < sizeof(*event)) {
+		lk_log_error("Invalid event size: %u (expected %lu)",
+			     (unsigned int)size, (unsigned long)sizeof(*event));
+		return;
+	}
+
+	if (!et_ft_check(p->filter, event))
 		return;
 
-	p->current = *ev;
-	p->event_ready = true;
+	event_queue_push(p, event);
 }
 
 static void
@@ -75,6 +129,7 @@ profiler_destructor(void *self)
 	if (p->skel)
 		exec_trace_bpf__destroy(p->skel);
 
+	event_queue_clear(p);
 	lk_free(p);
 }
 
@@ -88,6 +143,13 @@ profiler_new(et_profiler **out)
 	if (!p)
 		return lk_status_create(LK_MEM_ALLOC_FAIL);
 
+	p->skel = NULL;
+	p->pb = NULL;
+	p->filter = NULL;
+	p->head = NULL;
+	p->tail = NULL;
+	p->queue_error = 0;
+	p->exiting = 0;
 	LK_OBJ_INIT(&p->base, profiler_destructor);
 
 	p->skel = exec_trace_bpf__open();
@@ -135,12 +197,12 @@ extern int
 get_event(et_profiler *profiler, const et_filter *filter, et_event *ev)
 {
 	profiler_impl *p = (profiler_impl *)profiler;
+	event_message *message;
 	int cnt;
 
 	p->filter = filter;
-	p->event_ready = false;
 
-	while (!p->event_ready && !p->exiting) {
+	while (!p->head && !p->exiting && !p->queue_error) {
 		cnt = perf_buffer__poll(p->pb, 100);
 		if (cnt < 0 && cnt != -EINTR) {
 			lk_log_error("Error polling perf buffer: %d", cnt);
@@ -148,9 +210,17 @@ get_event(et_profiler *profiler, const et_filter *filter, et_event *ev)
 		}
 	}
 
-	if (p->event_ready) {
-		*ev = p->current;
+	message = event_queue_pop(p);
+	if (message) {
+		*ev = message->event;
+		lk_free(message);
 		return 1;
+	}
+
+	if (p->queue_error) {
+		lk_log_error("Failed to queue profiler event: %d",
+			     p->queue_error);
+		return p->queue_error;
 	}
 	return 0;
 }

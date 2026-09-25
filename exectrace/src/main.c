@@ -26,7 +26,7 @@ init_project(int argc, char **argv)
 		return st;
 	}
 
-	st = lk_standard_logger(et_cfg_output_path(), et_cfg_log_level());
+	st = lk_determ_logger(et_cfg_output_path(), et_cfg_log_level());
 	if (!lk_status_is_ok(st)) {
 		et_cfg_deinit();
 		lk_allocator_deinit();

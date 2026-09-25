@@ -4,4 +4,5 @@
 *.txt
 main
 examples/hello_exec
+examples/exec_bash
 .vscode/*

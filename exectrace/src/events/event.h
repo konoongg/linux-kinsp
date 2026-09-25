@@ -3,19 +3,26 @@
 
 #include <linux/types.h>
 
-#include "object/lk_obj.h"
-
-typedef union lk_status lk_status;
+#include "object/lk_status.h"
 
 #define ET_FILENAME_LEN 256
 
 typedef enum {
-	ET_EVENT_TYPE_START_EXEC = 0,
+	ET_TYPE_START_EXEC = 0,
+	ET_TYPE_BIN_PROG_CREATE,
+	ET_TYPE_TRY_ELF,
+	ET_TYPE_TRY_ELF_RESULT,
+	ET_TYPE_TRY_SCRIPT,
+	ET_TYPE_TRY_SCRIPT_RESULT,
+	ET_TYPE_FILE_READ,
 } et_event_type;
 
 typedef struct et_event {
 	__u32 pid;
 	et_event_type event_type;
+	lk_error_code status;
+	__u64 count;
+	__u64 offset;
 	char  filename[ET_FILENAME_LEN];
 } et_event;
 

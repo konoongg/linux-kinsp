@@ -16,6 +16,8 @@ typedef enum {
     LK_MEM_ALLOC_FAIL,
     LK_UNDEFINED_ERROR,
     LK_CLOSE,
+    LK_MATCH = LK_OK,   /* alias for LK_OK */
+    LK_UNMATCH = 9,
 } lk_error_code;
 
 typedef struct lk_status_obj lk_status_obj;
@@ -52,6 +54,8 @@ static inline lk_status lk_status_create(lk_error_code code)
 #define LK_STATUS_MEM_ALLOC_FAIL()   lk_status_create(LK_MEM_ALLOC_FAIL)
 #define LK_STATUS_UNDEFINED_ERROR()  lk_status_create(LK_UNDEFINED_ERROR)
 #define LK_STATUS_CLOSE()            lk_status_create(LK_CLOSE)
+#define LK_STATUS_MATCH()            lk_status_create(LK_MATCH)
+#define LK_STATUS_UNMATCH()          lk_status_create(LK_UNMATCH)
 
 lk_status lk_status_create_msg(lk_error_code code, const char *message);
 
